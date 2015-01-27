@@ -2,6 +2,7 @@
 
 from BaseHTTPServer import BaseHTTPRequestHandler,HTTPServer
 from SocketServer import ThreadingMixIn
+from telnetlib import Telnet
 import os
 import psutil
 import signal
@@ -47,13 +48,27 @@ class SimpleHttpServer():
 
 def serverStatus():
     loadavg = os.getloadavg()
-    virtual_memory = psutil.virtual_memory();
-    swap_memory = psutil.swap_memory();
-    disk_usage = psutil.disk_usage('/');
+    virtual_memory = psutil.virtual_memory()
+    swap_memory = psutil.swap_memory()
+    disk_usage = psutil.disk_usage('/')
+    elasticsearch_up = is_elasticsearch_up()
+    
     return {'loadavg': loadavg,
             'virtual_memory': virtual_memory,
             'swap_memory': swap_memory,
-            'disk_usage': disk_usage}
+            'disk_usage': disk_usage,
+            'elasticsearch_up': elasticsearch_up}
+
+def is_elasticsearch_up():
+    try:
+        conn_9200 = Telnet("localhost", port=9200)
+        conn_9200.close()
+        conn_9300 = Telnet("localhost", port=9300)
+        conn_9300.close()
+        return True
+    except:
+        return False;
+
  
 if __name__=='__main__':
     parser = argparse.ArgumentParser(description='HTTP Server')
