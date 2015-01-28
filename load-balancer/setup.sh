@@ -18,11 +18,11 @@ git pull -q
 
 # update packages
 sudo apt-get update
-sudo apt-get upgrade
+sudo apt-get -y upgrade
 
 # install missing Ubuntu packages
 packages_ubuntu=$(cat "packages/ubuntu-packages")
-sudo apt-get install $packages_ubuntu
+sudo apt-get -y install $packages_ubuntu
 
 # stop services
 sudo stop haproxy

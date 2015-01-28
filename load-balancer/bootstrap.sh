@@ -22,6 +22,6 @@ sudo dpkg --configure -a
 sudo dpkg-reconfigure -plow unattended-upgrades
 # update and upgrade
 sudo apt-get update
-sudo apt-get dist-upgrade
-sudo apt-get upgrade
+sudo apt-get -y dist-upgrade
+sudo apt-get -y upgrade
     
