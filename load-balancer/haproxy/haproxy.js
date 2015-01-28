@@ -55,7 +55,7 @@ function stopHAProxy(callback) {
     haproxy.softstop(function(error) {
         if (error) {
             log.info("Could not SOFTstop running HAProxies. Trying hard stop: " + JSON.stringify(error));
-            haproxy.stop(true, function(error) {
+            return haproxy.stop(true, function(error) {
                 if (error) {
                     return callback("Could not stop HAProxies SOFT or HARD: " + JSON.stringify(error));
                 }
