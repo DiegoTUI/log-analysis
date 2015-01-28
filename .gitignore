@@ -1,0 +1,5 @@
+.DS_Store
+*.pyc
+local-config.js
+servers.json
+node_modules

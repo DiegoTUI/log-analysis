@@ -1,0 +1,23 @@
+{
+  "name": "config",
+  "description": "Server configuration for GuideGo",
+  "version": "0.0.1",
+  "author": {
+    "name": "Diego Lafuente",
+    "email": "dlafuente@tuitravel-ad.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/DiegoTUI/GuideGoConfig.git"
+  },
+  "dependencies": {
+    "request": "2.34.x",
+    "log":"1.4.x",
+    "testing":"0.0.x",
+    "haproxy": "0.0.x",
+    "node-watch": "0.3.x"
+  },
+  "engines": {
+    "node": ">= 0.8.0"
+  }
+}
