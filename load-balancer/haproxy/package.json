@@ -1,6 +1,6 @@
 {
-  "name": "config",
-  "description": "Server configuration for GuideGo",
+  "name": "haproxy-config",
+  "description": "Managing of HAProxy through node.js",
   "version": "0.0.1",
   "author": {
     "name": "Diego Lafuente",
@@ -8,14 +8,13 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/DiegoTUI/GuideGoConfig.git"
+    "url": "https://github.com/DiegoTUI/log-analysis.git"
   },
   "dependencies": {
-    "request": "2.34.x",
-    "log":"1.4.x",
-    "testing":"0.0.x",
-    "haproxy": "0.1.x",
-    "node-watch": "0.3.x"
+    "request": "*",
+    "log":"*",
+    "haproxy": "*",
+    "node-watch": "*"
   },
   "engines": {
     "node": ">= 0.8.0"
