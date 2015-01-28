@@ -14,7 +14,7 @@
     "request": "2.34.x",
     "log":"1.4.x",
     "testing":"0.0.x",
-    "haproxy": "0.0.x",
+    "haproxy": "0.1.x",
     "node-watch": "0.3.x"
   },
   "engines": {
