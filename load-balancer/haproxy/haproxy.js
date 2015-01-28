@@ -79,9 +79,9 @@ function startHAProxy(callback) {
 }
 
 /**
- * Resets the config file and reloads HAProxy 
+ * Resets the config file, stops and starts HAProxy 
  */
-function reloadHAProxy(callback) {
+function reloadHAProxyVeryHard(callback) {
     resetConfigFile(function (error) {
         if (error) {
             return callback("Reload - Error while trying to reset config file: " + error);
@@ -146,9 +146,21 @@ stopHAProxy(function (error) {
 // watch servers.json for changes
 watch(path.resolve(__dirname, "servers.json"), function (filename) {
     log.debug (filename + " changed. Reloading haproxy.");
-    reloadHAProxy(function (error) {
+    haproxy.reload(function (error) {
         if (error) {
-            return log.error(error);
+            log.error("Error with soft reloading. Trying hard: " + error)
+            return haproxy.reload(true, function (error) {
+                if (error) {
+                    log.error("Error with hard reloading. Trying harder: " + error)
+                    return reloadHAProxyVeryHard(function (error) {
+                        if (error) {
+                            return log.error("It's impossible to reload this crap: " + error);
+                        }
+                        return log.info("HAProxy reloaded correctly. Very hard.");
+                    });
+                }
+                return log.info("HAProxy reloaded correctly. Hard.");
+            });
         }
         return log.info("HAProxy reloaded correctly.");
     });
