@@ -13,24 +13,22 @@ var request = require("request");
 var Log = require("log");
 var config = require("./config.js");
 var watch = require("node-watch");
-var db = require("./db.js");
 
 // globals
 var log = new Log("debug");
 var haproxy = new HAProxy ("/tmp/haproxy.sock", {config: path.resolve(__dirname, config.haproxyConfig),
                                                 pidFile: path.resolve(__dirname, config.haproxyPidFile)});
 var servers = null;
-var monitoringCollection = null;
 
 /**
- * Reset servers to whats in servers.json
+ * Reset config file to what is in servers.json
  */
- function resetServers() {
+ function resetConfigFile(callback) {
     servers = JSON.parse(fs.readFileSync(path.resolve(__dirname, "./servers.json")));
     // read base haproxy config file
     fs.readFile(path.resolve(__dirname, config.baseHaproxyConfig), "utf8", function (error, data) {
         if (error || !data) {
-            return log.error ("couldn't read haproxy baseconfiguration file: " + config.baseHaproxyConfig);
+            return callback("couldn't read haproxy baseconfiguration file: " + config.baseHaproxyConfig);
         }
         // add servers
         var servers9200 = "#servers 9200";
@@ -42,14 +40,61 @@ var monitoringCollection = null;
         // write file
         fs.writeFile(path.resolve(__dirname, config.haproxyConfig), data, function (error) {
             if (error) {
-                return log.error ("couldn't write haproxy configuration file: " + config.haproxyConfig);
+                return callback ("couldn't write haproxy configuration file: " + config.haproxyConfig);
             }
-            // restart haproxy
-            haproxy.reload(function (error) {
+            return callback(null);
+        });
+    });
+}
+
+/**
+ * Stop running instance of HAProxy
+ */
+function stopHAProxy(callback) {
+    // try soft stop
+    haproxy.softstop(function(error) {
+        if (error) {
+            log.info("Could not SOFTstop running HAProxies. Trying hard stop: " + JSON.stringify(error));
+            haproxy.stop(true, function(error) {
                 if (error) {
-                    return log.error ("couldn't reload haproxy with the new configuration: " + JSON.stringify(error));
+                    return callback("Could not stop HAProxies SOFT or HARD: " + JSON.stringify(error));
                 }
-                log.info ("haproxy reloaded correctly");
+                return callback(null);
+            });
+        }
+        return callback(null);
+    });
+}
+
+/**
+ * Start an instance of HAProxy
+ */
+function startHAProxy(callback) {
+    haproxy.start(function(error) {
+        if (error) {
+            return callback("Could not start HAProxy instance: " + JSON.stringify(error));
+        }
+        return callback(null);
+    });
+}
+
+/**
+ * Resets the config file and reloads HAProxy 
+ */
+function reloadHAProxy(callback) {
+    resetConfigFile(function (error) {
+        if (error) {
+            return callback("Reload - Error while trying to reset config file: " + error);
+        }
+        stopHAProxy(function (error) {
+            if (error) {
+                return callback("Reload - Error while trying to stop all instances of HAProxy: " + error);
+            }
+            startHAProxy(function (error) {
+                if (error) {
+                    return callback("Reload - Error while trying to start HAProxy: " + error);
+                }
+                return callback(null);
             });
         });
     });
@@ -61,27 +106,52 @@ process.on("exit", function() {
 });
 process.on("SIGTERM", function() {
     log.info("SIGTERM");
-    haproxy.softstop(function (error) {
+    stopHAProxy(function (error) {
         if (error) {
             log.error("Exiting: couldn't stop all instances of haproxy: " + JSON.stringify(error));
+            process.exit(0);
         }
         log.info("Exiting: all haproxy instances stopped");
 	process.exit(1);
     });
 });
 
-// reset servers the first time the script is called
-haproxy.softstop(function (error) {
+// Stop and start everything
+log.info("Starting HAProxy script...");
+stopHAProxy(function (error) {
     if (error) {
-        log.error("Starting: couldn't stop all instances of haproxy: " + JSON.stringify(error));
+        log.error("Error while trying to stop all instances of HAProxy: " + error);
     }
-    resetServers();
+    else {
+        log.info("All instances stopped");
+    }
+    resetConfigFile(function (error) {
+        if (error) {
+            log.error("Error while trying to reset config file: " + error);
+        }
+        else {
+            log.info("Config file reset");
+        }
+        startHAProxy(function (error) {
+            if (error) {
+                log.error("Error while trying to start HAProxy: " + error);
+            }
+            else {
+                log.info("HAProxy started");
+            }
+        });
+    });
 });
 
 // watch servers.json for changes
 watch(path.resolve(__dirname, "servers.json"), function (filename) {
-    log.debug (filename + " changed. Resetting haproxy");
-    resetServers();
+    log.debug (filename + " changed. Reloading haproxy.");
+    reloadHAProxy(function (error) {
+        if (error) {
+            return log.error(error);
+        }
+        return log.info("HAProxy reloaded correctly.");
+    });
 });
 
 //read status from every server
