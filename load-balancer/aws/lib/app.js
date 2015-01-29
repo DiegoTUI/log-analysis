@@ -67,11 +67,11 @@ function serve (request, response) {
     var responseToSend;
     var serviceName = request.params.service;
     var apiKey = request.params.apiKey;
-    var service = services[serviceName.servify()];
+    var Service = services[serviceName.servify()];
     // set response type
     response.set("Content-Type", "application/json");
     // check service
-    if (typeof service !== "function") {
+    if (typeof Service !== "function") {
         responseToSend = {
             status: "ERROR",
             error: "Unexisting service " + serviceName
@@ -88,7 +88,8 @@ function serve (request, response) {
     }
     // Everything ok, call service
     log.info("Calling " + serviceName + " with params " + JSON.stringify(request.query));
-    service(request.query, function (error, result) {
+    var service = new Service(request.query);
+    service.sendRequest(function (error, result) {
         if (error) {
             responseToSend = {
                 status: "ERROR",
@@ -186,11 +187,15 @@ function testMirrorService(callback) {
 
 exports.test = function(callback) {
     // add a fake test services
-    services.mirrorService = function(params, callback) {
-        return callback(null, params);
+    services.mirrorService = function(params) {
+        this.sendRequest = function(callback) {
+            return callback(null, params);
+        };
     };
-    services.errorService = function(params, callback) {
-        return callback("error returned by error-service");
+    services.errorService = function(params) {
+        this.sendRequest = function(callback) {
+            return callback("error returned by error-service");  
+        };
     };
     testing.run([
         testInvalidApiKey,

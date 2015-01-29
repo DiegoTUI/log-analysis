@@ -5,7 +5,7 @@ var fs = require("fs");
 var AWS = require("aws-sdk");
 var async = require("async");
 var Log = require("log");
-var config = require("../config.js");
+var config = require("../../config.js");
 
 // globals
 var log = new Log(config.logLevel);
@@ -20,15 +20,23 @@ var ec2 = new AWS.EC2({accessKeyId: config.awsAccess,
  *  - addToLoadBalancer[optional]: A boolean indicating if the newly created instance should be added to servers.json. Defaults to false.
  * @param callback[required]: the function(error, result) to be called when done
  */
-module.export = function (params, callback) {
+module.exports = function (params) {
+    // self-reference
+    var self = this;
     // init parameters
     params = typeof params === "function" ? {} : params;
     callback = callback || params;
     initParams();
-    // build main stream
-    var mainStream = buildMainStream();
-    // run stream
-    async.waterfall(mainStream, callback);
+
+    /**
+     * Performs request
+     */
+    self.sendRequest = function(callback) {
+        // build main stream
+        var mainStream = buildMainStream();
+        // run stream
+        async.waterfall(mainStream, callback);
+    }
 
     /**
      * Inits parameters
