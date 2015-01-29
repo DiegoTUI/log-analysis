@@ -1,0 +1,26 @@
+{
+  "name": "aws-elasticsearch",
+  "description": "Library to start and stop ElasticSearch nodes from node.js",
+  "version": "0.0.1",
+  "author": {
+    "name": "Diego Lafuente",
+    "email": "dlafuente@tuitravel-ad.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/DiegoTUI/log-analysis.git"
+  },
+  "dependencies": {
+    "express": "*",
+    "request": "*",
+    "aws-sdk": "*",
+    "log":"*",
+    "testing":"*"
+  },
+  "scripts": {
+    "test": "node test.js"
+  },
+  "engines": {
+    "node": ">= 0.8.0"
+  }
+}
