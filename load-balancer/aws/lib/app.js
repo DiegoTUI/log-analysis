@@ -6,6 +6,7 @@
  */
 
 // requires
+require("./prototypes.js");
 var Log = require("log");
 var express = require("express");
 var request = require("request");
@@ -66,7 +67,7 @@ function serve (request, response) {
     var responseToSend;
     var serviceName = request.params.service;
     var apiKey = request.params.apiKey;
-    var service = services[serviceName];
+    var service = services[serviceName.servify()];
     // set response type
     response.set("Content-Type", "application/json");
     // check service
@@ -182,10 +183,10 @@ function testMirrorService(callback) {
 
 exports.test = function(callback) {
     // add a fake test services
-    services["mirror-service"] = function(params, callback) {
+    services["mirrorService"] = function(params, callback) {
         return callback(null, params);
     };
-    services["error-service"] = function(params, callback) {
+    services["errorService"] = function(params, callback) {
         return callback("error returned by error-service");
     };
     testing.run([
