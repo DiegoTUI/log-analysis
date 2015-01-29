@@ -5,8 +5,5 @@
  * (C) 2015 Diego Lafuente.
  */
 
- // create instances
- exports.createInstances = function (params, callback) {
-
- };
+exports.createInstances = require("./services/create-instances.js");
 

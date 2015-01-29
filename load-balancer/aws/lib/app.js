@@ -87,18 +87,21 @@ function serve (request, response) {
         return response.status(500).send(responseToSend);
     }
     // Everything ok, call service
+    log.info("Calling " + serviceName + " with params " + JSON.stringify(request.query));
     service(request.query, function (error, result) {
         if (error) {
             responseToSend = {
                 status: "ERROR",
                 error: serviceName + ": " + error
             };
+            log.info("Error in request to " + serviceName + " with params " + JSON.stringify(request.query) + ". Error: " + error);
             return response.status(500).send(responseToSend);
         }
         responseToSend = {
             status: "OK",
             data: result
         };
+        log.info("Success in request to " + serviceName + " with params " + JSON.stringify(request.query) + ". Result: " + JSON.stringify(result));
         return response.status(200).jsonp(responseToSend);
     });
 }
@@ -183,10 +186,10 @@ function testMirrorService(callback) {
 
 exports.test = function(callback) {
     // add a fake test services
-    services["mirrorService"] = function(params, callback) {
+    services.mirrorService = function(params, callback) {
         return callback(null, params);
     };
-    services["errorService"] = function(params, callback) {
+    services.errorService = function(params, callback) {
         return callback("error returned by error-service");
     };
     testing.run([
@@ -195,8 +198,8 @@ exports.test = function(callback) {
         testServiceReturningError,
         testMirrorService
     ], function (error, result) {
-        delete services["mirror-service"];
-        delete services["error-service"];
+        delete services.mirrorService;
+        delete services.errorService;
         callback(error, result);
     });
 };

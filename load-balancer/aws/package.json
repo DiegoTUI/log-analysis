@@ -11,6 +11,7 @@
     "url": "https://github.com/DiegoTUI/log-analysis.git"
   },
   "dependencies": {
+    "async": "*",
     "express": "*",
     "request": "*",
     "aws-sdk": "*",
