@@ -50,11 +50,11 @@ exports.startServer = function(port, callback) {
  */
 exports.closeServer = function(callback) {
     if (!server) {
-        log.info("No server to close");
+        log.debug("No server to close");
         return callback(null);
     }
     server.close(function() {
-        log.info("Server closed");
+        log.debug("Server closed");
         return callback(null);
     });
 };
@@ -105,6 +105,7 @@ function serve (request, response) {
 /***********************************
  ************ UNIT TESTS ***********
  ***********************************/
+
 function testInvalidApiKey(callback) {
     exports.startServer(config.serverPortTest, function (error) {
         testing.check(error, callback);
