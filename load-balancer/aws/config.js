@@ -8,8 +8,8 @@ exports.logLevel = "info";
 var log = new Log(exports.logLevel);
 
 // AWS credentials and region
-exports.awsAccess; // to be defined in local-config.js
-exports.awsSecret; // to be defined in local-config.js
+exports.awsAccess = null; // to be defined in local-config.js
+exports.awsSecret = null; // to be defined in local-config.js
 exports.awsRegion = "eu-west-1";
 // Features of the ElasticSearch nodes
 exports.ESImageId = "ami-73bb3704";

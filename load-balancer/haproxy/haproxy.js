@@ -148,14 +148,14 @@ watch(path.resolve(__dirname, "servers.json"), function (filename) {
     log.debug (filename + " changed. Reloading haproxy.");
     resetConfigFile(function (error) {
         if (error) {
-            log.error("Error with resetting config file: " + error)
+            log.error("Error with resetting config file: " + error);
         }
         return haproxy.reload(function (error) {
             if (error) {
-                log.error("Error with soft reloading. Trying hard: " + error)
+                log.error("Error with soft reloading. Trying hard: " + error);
                 return haproxy.reload(true, function (error) {
                     if (error) {
-                        log.error("Error with hard reloading. Trying harder: " + error)
+                        log.error("Error with hard reloading. Trying harder: " + error);
                         return reloadHAProxyVeryHard(function (error) {
                             if (error) {
                                 return log.error("It's impossible to reload this crap: " + error);
@@ -168,7 +168,6 @@ watch(path.resolve(__dirname, "servers.json"), function (filename) {
             }
             return log.info("HAProxy reloaded correctly.");
         });
-        return log.info("HAProxy reloaded correctly.");
     });
 });
 

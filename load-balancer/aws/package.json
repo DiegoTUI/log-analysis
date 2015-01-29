@@ -16,7 +16,9 @@
     "request": "*",
     "aws-sdk": "*",
     "log":"*",
-    "testing":"*"
+    "testing":"*",
+    "grunt": "*",
+    "grunt-contrib-jshint": "*"
   },
   "scripts": {
     "test": "node test.js"
