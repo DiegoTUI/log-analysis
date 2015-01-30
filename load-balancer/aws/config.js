@@ -24,6 +24,9 @@ exports.serversJsonPath = "/home/ubuntu/haproxy/servers.json";
 exports.serverPort = 8080;
 exports.serverPortTest = 5054;
 exports.validApiKey = "yvalsd7bde93njbc67bd5";
+// Services
+exports.timeoutServices = ["create-instance"];
+exports.millisecondsToWaitForTimeoutServices = 5*60*1000;
 
 try {
     var localConfig = require("./local-config.js");

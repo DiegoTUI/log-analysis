@@ -1,7 +1,6 @@
 "use strict";
 
 // requires
-var fs = require("fs");
 var AWS = require("aws-sdk");
 var async = require("async");
 var Log = require("log");
@@ -17,15 +16,18 @@ var ec2 = new AWS.EC2({accessKeyId: config.awsAccess,
  * Creates one or several elasticsearch instances in the cluster and adds them to servers.json
  * @param params[optional] - the parameters of the request:
  *  - count[optional]: The number of instances to create. Defaults to 1.
- *  - addToLoadBalancer[optional]: A boolean indicating if the newly created instance should be added to servers.json. Defaults to false.
- * @param callback[required]: the function(error, result) to be called when done
+ * @param callback[required]: the function(error, result) to be called when done. 
+ * The instances ARE NOT OPERATIVE when the callback is returned. You will have to call the instance-status 
+ * service or check the AWS console to check when they are ready to use.
+ * @return The result is an array of dictionaries with the instances being created:
+ *  - name: the instance name
+ *  - id: the instance id
+ *  - privateIp: the instance private IP
  */
 module.exports = function (params) {
     // self-reference
     var self = this;
     // init parameters
-    params = typeof params === "function" ? {} : params;
-    callback = callback || params;
     initParams();
 
     /**
@@ -36,7 +38,7 @@ module.exports = function (params) {
         var mainStream = buildMainStream();
         // run stream
         async.waterfall(mainStream, callback);
-    }
+    };
 
     /**
      * Inits parameters
@@ -73,7 +75,7 @@ module.exports = function (params) {
                 var response = instances.map(function (instance) {
                     return {
                         name: config.ESNameTag,
-                        instanceId: instance.InstanceId,
+                        id: instance.InstanceId,
                         privateIp: instance.PrivateIpAddress
                     };
                 });
@@ -83,9 +85,9 @@ module.exports = function (params) {
         // createTags
         mainStream.push(function (response, callback) {
             var instanceIds = response.map(function (instance) {
-                return instance.instanceId;
+                return instance.id;
             });
-            log.debug("Instances created", instanceIds, "Tagging...");
+            log.debug("Instances being created", instanceIds, "Tagging...");
             var createTagsParams = {
                 Resources: instanceIds,
                 Tags: [
@@ -100,45 +102,6 @@ module.exports = function (params) {
                 return callback(null, response, instanceIds);
             });
         });
-        // wait for Instance Status OK
-        mainStream.push(function (response, instanceIds, callback) {
-            var waitForParams = {
-                InstanceIds: instanceIds
-            };
-            log.debug("Waiting for instances", instanceIds, "to be ready.");
-            ec2.waitFor("instanceStatusOk", waitForParams, function(error) {
-                if (error) {
-                    log.error("Error while waiting for instances to be ready:", error, error.stack);
-                    return callback(error);
-                }
-                return callback(null, response);
-            });
-        });
-        // add to servers.json (if params.addToLoadBalancer is true)
-        if (params.addToLoadBalancer === true) {
-            mainStream.push(function (response, callback) {
-                log.debug("Adding instances to servers.json @" + config.serversJsonPath);
-                fs.readFile(config.serversJsonPath, function (error, data) {
-                    if (error) {
-                        log.error("Could not open servers.json. The instances WERE NOT added to the load balancer.", error);
-                        return callback(null, response);
-                    }
-                    var servers = JSON.parse(data);
-                    response.forEach(function (instance) {
-                        servers.push({
-                            name: instance.name,
-                            url: instance.privateIp
-                        });
-                    });
-                    fs.writeFile(config.serversJsonPath, JSON.stringify(servers, null, 4), function(error) {
-                        if (error) {
-                            log.error("Could not write servers.json. The instances WERE NOT added to the load balancer.", error);
-                        }
-                        return callback(null, response);
-                    });
-                });
-            });
-        }
         return mainStream;
     }
 };

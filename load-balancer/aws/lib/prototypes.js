@@ -32,6 +32,16 @@ String.prototype.isJson = function () {
     return true;
 };
 
+/**
+ * Checks if a string is a valid IP address
+ */
+String.prototype.isIpAddress = function () {
+    if (/^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/.test(this)) {
+        return true;
+    }
+    return false;
+};
+
 /***********************************
  ************ UNIT TESTS ***********
  ***********************************/
@@ -51,10 +61,19 @@ function testIsJson(callback) {
     testing.success(callback);
 }
 
+function testIsIpAddress(callback) {
+    testing.assertEquals(String.prototype.isIpAddress.apply("172.168.32.54"), true, "isIpAddress failed with valid ip", callback);
+    testing.assertEquals(String.prototype.isIpAddress.apply("kkfu"), false, "isIpAddress failed with invalid ip", callback);
+    testing.assertEquals(String.prototype.isIpAddress.apply("172.168.32"), false, "isIpAddress failed with invalid ip", callback);
+    testing.assertEquals(String.prototype.isIpAddress.apply("256.168.32.54"), false, "isIpAddress failed with invalid ip", callback);
+    testing.success(callback);
+}
+
 exports.test = function(callback) {
     testing.run([
         testServify,
-        testIsJson
+        testIsJson,
+        testIsIpAddress
     ], callback);
 };
 

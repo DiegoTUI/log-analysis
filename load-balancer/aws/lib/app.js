@@ -6,7 +6,6 @@
  */
 
 // requires
-require("./prototypes.js");
 var Log = require("log");
 var express = require("express");
 var request = require("request");
@@ -17,6 +16,7 @@ var testing = require("testing");
 // globals
 var log = new Log(config.logLevel);
 var server;
+var bannedServices = [];
 
 // process
 process.title = "aws-server";
@@ -67,7 +67,7 @@ function serve (request, response) {
     var responseToSend;
     var serviceName = request.params.service;
     var apiKey = request.params.apiKey;
-    var Service = services[serviceName.servify()];
+    var Service = services[serviceName];
     // set response type
     response.set("Content-Type", "application/json");
     // check service
@@ -75,6 +75,14 @@ function serve (request, response) {
         responseToSend = {
             status: "ERROR",
             error: "Unexisting service " + serviceName
+        };
+        return response.status(500).send(responseToSend);
+    }
+    // check if banned
+    if (bannedServices.indexOf(serviceName) > -1) {
+        responseToSend = {
+            status: "ERROR",
+            error: "Banned service " + serviceName
         };
         return response.status(500).send(responseToSend);
     }
@@ -89,6 +97,16 @@ function serve (request, response) {
     // Everything ok, call service
     log.info("Calling " + serviceName + " with params " + JSON.stringify(request.query));
     var service = new Service(request.query);
+    // add service to banned services
+    if (config.timeoutServices.indexOf(serviceName) > -1) {
+        bannedServices.push(serviceName);
+        setTimeout(function() {
+            var index = bannedServices.indexOf(serviceName);
+            if (index > -1) {
+                bannedServices.splice(index, 1);
+            }
+        }, config.millisecondsToWaitForTimeoutServices);
+    }
     service.sendRequest(function (error, result) {
         if (error) {
             responseToSend = {
@@ -187,14 +205,14 @@ function testMirrorService(callback) {
 
 exports.test = function(callback) {
     // add a fake test services
-    services.mirrorService = function(params) {
+    services["mirror-service"] = function(params) {
         this.sendRequest = function(callback) {
             return callback(null, params);
         };
     };
-    services.errorService = function(params) {
+    services["error-service"] = function() {
         this.sendRequest = function(callback) {
-            return callback("error returned by error-service");  
+            return callback("error returned by error-service");
         };
     };
     testing.run([
@@ -203,8 +221,8 @@ exports.test = function(callback) {
         testServiceReturningError,
         testMirrorService
     ], function (error, result) {
-        delete services.mirrorService;
-        delete services.errorService;
+        delete services["mirror-service"];
+        delete services["error-service"];
         callback(error, result);
     });
 };
