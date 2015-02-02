@@ -24,7 +24,7 @@ var ec2 = new AWS.EC2({accessKeyId: config.awsAccess,
  *  - status: the instance status: "ok", "impaired", "insufficient-data" or "not-applicable"
  *  - systemStatus: the system status in the instance: "passed", "failed" or "insufficient-data"
  */
-module.exports = function (params) {
+exports.Service = function (params) {
     // self-reference
     var self = this;
     // init parameters
@@ -35,7 +35,7 @@ module.exports = function (params) {
      */
     self.sendRequest = function(callback) {
         ec2.describeInstanceStatus(params, function (error, result) {
-            if (error || !result || !result || !result.InstanceStatuses || !(result.InstanceStatuses instanceof Array)) {
+            if (error || !result || !result.InstanceStatuses || !(result.InstanceStatuses instanceof Array)) {
                 log.error("Could not get instance(s) status", error, result);
                 return callback("Could not get instance(s) status", error, result);
             }
@@ -85,7 +85,7 @@ function testEmptyParams(callback) {
         }
     };
     // create and launch service
-    var service = new module.exports();
+    var service = new exports.Service();
     service.sendRequest(function (error, result) {
         testing.check(error, callback);
         testing.assertEquals(result.length, 1, "wrong number of instance statuses returned", callback);
@@ -117,7 +117,7 @@ function testValidParams(callback) {
         }
     };
     // create and launch service
-    var service = new module.exports({ids:"testInstanceId"});
+    var service = new exports.Service({ids:"testInstanceId"});
     service.sendRequest(function (error, result) {
         testing.check(error, callback);
         testing.assertEquals(result.length, 1, "wrong number of instance statuses returned", callback);

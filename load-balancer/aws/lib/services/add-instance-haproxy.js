@@ -19,7 +19,7 @@ var log = new Log(config.logLevel);
  *  - name: the name of the server
  *  - url: the ip of the server
  */
-module.exports = function (params) {
+exports.Service = function (params) {
     // self-reference
     var self = this;
     // compulsory paramaters
@@ -91,7 +91,7 @@ module.exports = function (params) {
 
 function testEmptyParams(callback) {
     // create and launch service
-    var service = new module.exports({ips: "127.0.0.1,256.10.5.4"});
+    var service = new exports.Service({ips: "127.0.0.1,256.10.5.4"});
     service.sendRequest(function (error, result) {
         testing.assert(error, "empty params did NOT return an error", callback);
         testing.check(result, callback);
@@ -101,7 +101,7 @@ function testEmptyParams(callback) {
 
 function testInvalidParams(callback) {
     // create and launch service
-    var service = new module.exports();
+    var service = new exports.Service();
     service.sendRequest(function (error, result) {
         testing.assert(error, "invalid params did NOT return an error", callback);
         testing.check(result, callback);
@@ -125,7 +125,7 @@ function testValidParams(callback) {
             return internalCallback(null);
         }
     };
-    var service = new module.exports({ips: "127.0.0.1"});
+    var service = new exports.Service({ips: "127.0.0.1"});
     service.sendRequest(function (error, result) {
         testing.check(error, callback);
         testing.assertEquals(result.length, 1, "wrong number of items returned after adding new servers", callback);

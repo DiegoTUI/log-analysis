@@ -1,7 +1,7 @@
 "use strict";
 
 
-module.exports = function (params) {
+exports.Service = function (params) {
     var self = this;
 
     self.sendRequest = function (callback) {

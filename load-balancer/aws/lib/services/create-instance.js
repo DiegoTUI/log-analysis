@@ -25,7 +25,7 @@ var ec2 = new AWS.EC2({accessKeyId: config.awsAccess,
  *  - id: the instance id
  *  - privateIp: the instance private IP
  */
-module.exports = function (params) {
+exports.Service = function (params) {
     // self-reference
     var self = this;
     // init parameters
@@ -142,7 +142,7 @@ function testEmptyParams(callback) {
         }
     };
     // create and launch service
-    var service = new module.exports();
+    var service = new exports.Service();
     service.sendRequest(function (error, result) {
         testing.check(error, callback);
         testing.assertEquals(result.length, 1, "wrong number of instances returned", callback);
@@ -191,7 +191,7 @@ function testValidParams(callback) {
         }
     };
     // create and launch service
-    var service = new module.exports({count: 2});
+    var service = new exports.Service({count: 2});
     service.sendRequest(function (error, result) {
         testing.check(error, callback);
         testing.assertEquals(result.length, 2, "wrong number of instances returned", callback);
