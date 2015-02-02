@@ -4,6 +4,7 @@
 var AWS = require("aws-sdk");
 var Log = require("log");
 var config = require("../../config.js");
+var testing = require("testing");
 
 // globals
 var log = new Log(config.logLevel);
@@ -62,3 +63,82 @@ module.exports = function (params) {
         }
     }
 };
+
+/***********************************
+ ************ UNIT TESTS ***********
+ ***********************************/
+
+function testEmptyParams(callback) {
+    // stub ec2
+    var ec2_restore = ec2;
+    ec2 = {
+        describeInstanceStatus: function(params, internalCallback) {
+            testing.assertEquals(Object.keys(params).length, 0, "non-empty params sent to describeInstanceStatus", callback);
+            internalCallback(null, {
+                InstanceStatuses: [{
+                    InstanceId: "testInstanceId",
+                    InstanceState: {Name: "testInstanceState"},
+                    InstanceStatus: {Status: "testInstanceStatus"},
+                    SystemStatus: {Status: "testSystemStatus"}
+                }]
+            });
+        }
+    };
+    // create and launch service
+    var service = new module.exports();
+    service.sendRequest(function (error, result) {
+        testing.check(error, callback);
+        testing.assertEquals(result.length, 1, "wrong number of instance statuses returned", callback);
+        testing.assertEquals(result[0].id, "testInstanceId", "wrong instance id returned", callback);
+        testing.assertEquals(result[0].state, "testInstanceState", "wrong instance state returned", callback);
+        testing.assertEquals(result[0].status, "testInstanceStatus", "wrong instance status returned", callback);
+        testing.assertEquals(result[0].systemStatus, "testSystemStatus", "wrong system status returned", callback);
+        //restore ec2
+        ec2 = ec2_restore;
+        testing.success(callback);
+    });
+}
+
+function testValidParams(callback) {
+    // stub ec2
+    var ec2_restore = ec2;
+    ec2 = {
+        describeInstanceStatus: function(params, internalCallback) {
+            testing.assertEquals(params.InstanceIds.length, 1, "wrong number of instance ids sent to describeInstanceStatus", callback);
+            testing.assertEquals(params.InstanceIds[0], "testInstanceId", "wrong instance id sent to describeInstanceStatus", callback);
+            internalCallback(null, {
+                InstanceStatuses: [{
+                    InstanceId: "testInstanceId",
+                    InstanceState: {Name: "testInstanceState"},
+                    InstanceStatus: {Status: "testInstanceStatus"},
+                    SystemStatus: {Status: "testSystemStatus"}
+                }]
+            });
+        }
+    };
+    // create and launch service
+    var service = new module.exports({ids:"testInstanceId"});
+    service.sendRequest(function (error, result) {
+        testing.check(error, callback);
+        testing.assertEquals(result.length, 1, "wrong number of instance statuses returned", callback);
+        testing.assertEquals(result[0].id, "testInstanceId", "wrong instance id returned", callback);
+        testing.assertEquals(result[0].state, "testInstanceState", "wrong instance state returned", callback);
+        testing.assertEquals(result[0].status, "testInstanceStatus", "wrong instance status returned", callback);
+        testing.assertEquals(result[0].systemStatus, "testSystemStatus", "wrong system status returned", callback);
+        //restore ec2
+        ec2 = ec2_restore;
+        testing.success(callback);
+    });
+}
+
+ exports.test = function(callback) {
+    testing.run([
+        testEmptyParams,
+        testValidParams
+    ], callback);
+};
+
+// run tests if invoked directly
+if (__filename == process.argv[1]) {
+    exports.test(testing.show);
+}

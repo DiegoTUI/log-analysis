@@ -207,7 +207,7 @@ function testValidParams(callback) {
     });
 }
 
- exports.test = function(callback) {
+exports.test = function(callback) {
     testing.run([
         testEmptyParams,
         testValidParams
