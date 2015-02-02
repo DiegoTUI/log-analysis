@@ -106,7 +106,7 @@ function testValidParams(callback) {
         describeInstanceStatus: function(params, internalCallback) {
             testing.assertEquals(params.InstanceIds.length, 1, "wrong number of instance ids sent to describeInstanceStatus", callback);
             testing.assertEquals(params.InstanceIds[0], "testInstanceId", "wrong instance id sent to describeInstanceStatus", callback);
-            internalCallback(null, {
+            return internalCallback(null, {
                 InstanceStatuses: [{
                     InstanceId: "testInstanceId",
                     InstanceState: {Name: "testInstanceState"},
@@ -131,7 +131,7 @@ function testValidParams(callback) {
     });
 }
 
- exports.test = function(callback) {
+exports.test = function(callback) {
     testing.run([
         testEmptyParams,
         testValidParams

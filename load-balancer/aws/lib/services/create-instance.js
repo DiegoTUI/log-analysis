@@ -169,7 +169,7 @@ function testValidParams(callback) {
             for (var i=0; i<params.SecurityGroupIds.length; i++) {
                 testing.assertEquals(params.SecurityGroupIds[i], config.ESSecurityGroupIds[i], "invalid SecurityGroupId sent to runInstances", callback);
             }
-            internalCallback(null, {Instances:[{
+            return internalCallback(null, {Instances:[{
                 InstanceId: "testInstanceId1",
                 PrivateIpAddress : "testPrivateIp1"
             }, {
@@ -187,7 +187,7 @@ function testValidParams(callback) {
             testing.assertEquals(params.Tags[0].Value, config.ESNameTag, "wrong first tag value sent to createTags", callback);
             testing.assertEquals(params.Tags[1].Key, "Group", "wrong second tag key sent to createTags", callback);
             testing.assertEquals(params.Tags[1].Value, config.ESGroupTag, "wrong second tag value sent to createTags", callback);
-            callback(null);
+            return callback(null);
         }
     };
     // create and launch service

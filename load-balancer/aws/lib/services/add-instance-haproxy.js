@@ -5,6 +5,7 @@ require("../prototypes.js");
 var fs = require("fs");
 var Log = require("log");
 var config = require("../../config.js");
+var testing = require("testing");
 
 // globals
 var log = new Log(config.logLevel);
@@ -83,3 +84,68 @@ module.exports = function (params) {
         return check;
     }
 };
+
+/***********************************
+ ************ UNIT TESTS ***********
+ ***********************************/
+
+function testEmptyParams(callback) {
+    // create and launch service
+    var service = new module.exports({ips: "127.0.0.1,256.10.5.4"});
+    service.sendRequest(function (error, result) {
+        testing.assert(error, "empty params did NOT return an error", callback);
+        testing.check(result, callback);
+        testing.success(callback);
+    });
+}
+
+function testInvalidParams(callback) {
+    // create and launch service
+    var service = new module.exports();
+    service.sendRequest(function (error, result) {
+        testing.assert(error, "invalid params did NOT return an error", callback);
+        testing.check(result, callback);
+        testing.success(callback);
+    });
+}
+
+function testValidParams(callback) {
+    // stub fs
+    var restore_fs = fs;
+    fs = {
+        readFile: function(path, internalCallback) {
+            testing.assertEquals(path, config.serversJsonPath, "invalid path used to read servers.json", callback);
+            return internalCallback(null, "[]");
+        },
+        writeFile: function(path, data, internalCallback) {
+            var dataJson = JSON.parse(data);
+            testing.assertEquals(dataJson.length, 1, "wrong number of items returned after adding new servers", callback);
+            testing.assertEquals(dataJson[0].name, config.ESNameTag, "wrong name of server after adding new servers", callback);
+            testing.assertEquals(dataJson[0].url, "127.0.0.1", "wrong url of server after adding new servers", callback);
+            return internalCallback(null);
+        }
+    };
+    var service = new module.exports({ips: "127.0.0.1"});
+    service.sendRequest(function (error, result) {
+        testing.check(error, callback);
+        testing.assertEquals(result.length, 1, "wrong number of items returned after adding new servers", callback);
+        testing.assertEquals(result[0].name, config.ESNameTag, "wrong name of server after adding new servers", callback);
+        testing.assertEquals(result[0].url, "127.0.0.1", "wrong url of server after adding new servers", callback);
+        // restore fs
+        fs = restore_fs;
+        testing.success(callback);
+    });
+}
+
+exports.test = function(callback) {
+    testing.run([
+        testEmptyParams,
+        testInvalidParams,
+        testValidParams
+    ], callback);
+};
+
+// run tests if invoked directly
+if (__filename == process.argv[1]) {
+    exports.test(testing.show);
+}
