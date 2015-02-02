@@ -26,17 +26,24 @@ sudo apt-get -y install $packages_ubuntu
 
 # stop services
 sudo stop haproxy
-
+sudo stop aws-services
 # replace folders in haproxy.conf
 sed "s:{{HOME_FOLDER}}:$HOME_FOLDER:g" $CURRENT_FOLDER/upstart/haproxy.conf > $CURRENT_FOLDER/haproxy.conf.tmp
 sed -i -e "s:{{BASE_USER}}:$BASE_USER:g" $CURRENT_FOLDER/haproxy.conf.tmp
+# replace folders in aws-services.conf
+sed "s:{{HOME_FOLDER}}:$HOME_FOLDER:g" $CURRENT_FOLDER/upstart/aws-services.conf > $CURRENT_FOLDER/aws-services.conf.tmp
+sed -i -e "s:{{BASE_USER}}:$BASE_USER:g" $CURRENT_FOLDER/aws-services.conf.tmp
 # copy haproxy folder to HOME_FOLDER
 sudo -u $BASE_USER cp -rf $CURRENT_FOLDER/haproxy $HOME_FOLDER
+# copy aws folder to HOME_FOLDER
+sudo -u $BASE_USER cp -rf $CURRENT_FOLDER/aws $HOME_FOLDER
 # replace folder in base-haproxy.cfg
 sed "s:{{RUN_FOLDER}}:$HOME_FOLDER/haproxy/run:g" $CURRENT_FOLDER/haproxy/base-haproxy.cfg > $CURRENT_FOLDER/base-haproxy.cfg.tmp
 sudo -u $BASE_USER cp -f $CURRENT_FOLDER/base-haproxy.cfg.tmp $HOME_FOLDER/haproxy/base-haproxy.cfg
 rm -f $CURRENT_FOLDER/base-haproxy.cfg.tmp
 # install node packages
+cd $HOME_FOLDER/aws
+sudo npm install
 cd $HOME_FOLDER/haproxy
 sudo npm install
 # create extra folders
@@ -45,6 +52,8 @@ sudo -u $BASE_USER mkdir -p $HOME_FOLDER/haproxy/run
 # copy upstart files
 sudo cp -f $CURRENT_FOLDER/haproxy.conf.tmp /etc/init/haproxy.conf
 rm -f $CURRENT_FOLDER/haproxy.conf.tmp
+sudo cp -f $CURRENT_FOLDER/aws-services.conf.tmp /etc/init/aws-services.conf
+rm -f $CURRENT_FOLDER/aws-services.conf.tmp
 # copy rsyslog files
 sudo cp -f $CURRENT_FOLDER/log/49-haproxy.conf /etc/rsyslog.d
 # restart rsyslog
@@ -52,4 +61,5 @@ sudo restart rsyslog
 
 # start services again
 sudo start haproxy
+sudo start aws-services
 
