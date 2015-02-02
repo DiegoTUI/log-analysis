@@ -88,10 +88,9 @@ exports.Service = function (params) {
 /***********************************
  ************ UNIT TESTS ***********
  ***********************************/
-
 function testEmptyParams(callback) {
     // create and launch service
-    var service = new exports.Service({ips: "127.0.0.1,256.10.5.4"});
+    var service = new exports.Service();
     service.sendRequest(function (error, result) {
         testing.assert(error, "empty params did NOT return an error", callback);
         testing.check(result, callback);
@@ -101,7 +100,7 @@ function testEmptyParams(callback) {
 
 function testInvalidParams(callback) {
     // create and launch service
-    var service = new exports.Service();
+    var service = new exports.Service({ips: "127.0.0.1,256.10.5.4"});
     service.sendRequest(function (error, result) {
         testing.assert(error, "invalid params did NOT return an error", callback);
         testing.check(result, callback);
