@@ -14,10 +14,6 @@ var log = new Log(config.logLevel);
  * Adds one or several ips to the servers.json file
  * @param params[required] - the parameters of the request:
  *  - ips[required]: Comma separated list of the ips to add. All the instances will be named config.ESNameTag.
- * @param callback[required]: the function(error, result) to be called when done
- * @return The result is an array of dictionaries with ALL the ips currently in HAProxy:
- *  - name: the name of the server
- *  - url: the ip of the server
  */
 exports.Service = function (params) {
     // self-reference
@@ -29,6 +25,10 @@ exports.Service = function (params) {
 
     /**
      * Performs request
+     * @param callback[required]: the function(error, result) to be called when done
+     * @return The result is an array of dictionaries with ALL the ips currently in HAProxy:
+     *  - name: the name of the server
+     *  - url: the ip of the server
      */
     self.sendRequest = function(callback) {
         // check compulsory parameters

@@ -16,11 +16,6 @@ var ec2 = new AWS.EC2({accessKeyId: config.awsAccess,
  * Terminates one or several AWS instances
  * @param params[required] - the parameters of the request:
  *  - ids[required]: Comma separated list of the ids of the instances to terminate. 
- * @param callback[required]: the function(error, result) to be called when done.
- * The instances ARE NOT TERMINATED when the callback is returned. You will have to call the instance-status 
- * service or check the AWS console to check when they are actually terminated.
- * @return The result is an array of dictionaries with the instances being terminated:
- *  - id: the instance id
  */
 exports.Service = function (params) {
     // self-reference
@@ -32,6 +27,11 @@ exports.Service = function (params) {
 
     /**
      * Performs request
+     * @param callback[required]: the function(error, result) to be called when done.
+     * The instances ARE NOT TERMINATED when the callback is returned. You will have to call the instance-status 
+     * service or check the AWS console to check when they are actually terminated.
+     * @return The result is an array of dictionaries with the instances being terminated:
+     *  - id: the instance id
      */
     self.sendRequest = function(callback) {
         // check compulsory parameters

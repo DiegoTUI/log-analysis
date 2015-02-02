@@ -17,13 +17,6 @@ var ec2 = new AWS.EC2({accessKeyId: config.awsAccess,
  * Creates one or several elasticsearch instances in the cluster and adds them to servers.json
  * @param params[optional] - the parameters of the request:
  *  - count[optional]: The number of instances to create. Defaults to 1.
- * @param callback[required]: the function(error, result) to be called when done. 
- * The instances ARE NOT OPERATIVE when the callback is returned. You will have to call the instance-status 
- * service or check the AWS console to check when they are ready to use.
- * @return The result is an array of dictionaries with the instances being created:
- *  - name: the instance name
- *  - id: the instance id
- *  - privateIp: the instance private IP
  */
 exports.Service = function (params) {
     // self-reference
@@ -33,6 +26,13 @@ exports.Service = function (params) {
 
     /**
      * Performs request
+     * @param callback[required]: the function(error, result) to be called when done. 
+     * The instances ARE NOT OPERATIVE when the callback is returned. You will have to call the instance-status 
+     * service or check the AWS console to check when they are ready to use.
+     * @return The result is an array of dictionaries with the instances being created:
+     *  - name: the instance name
+     *  - id: the instance id
+     *  - privateIp: the instance private IP
      */
     self.sendRequest = function(callback) {
         // build main stream
