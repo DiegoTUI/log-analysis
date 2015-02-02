@@ -5,6 +5,7 @@ var AWS = require("aws-sdk");
 var async = require("async");
 var Log = require("log");
 var config = require("../../config.js");
+var testing = require("testing");
 
 // globals
 var log = new Log(config.logLevel);
@@ -99,9 +100,121 @@ module.exports = function (params) {
                 if (error) {
                     log.error("Could not tag instances " + instanceIds + ". PLEASE DO IT MANUALLY. Add the following tags: {\"Name\":\"" + config.ESNameTag + "\"} and {\"Group\":\"" + config.ESGroupTag + "\"}");
                 }
-                return callback(null, response, instanceIds);
+                return callback(null, response);
             });
         });
         return mainStream;
     }
 };
+
+/***********************************
+ ************ UNIT TESTS ***********
+ ***********************************/
+
+function testEmptyParams(callback) {
+    // stub ec2
+    var ec2_restore = ec2;
+    ec2 = {
+        runInstances: function(params, internalCallback) {
+            testing.assertEquals(params.MinCount, 1, "invalid MinCount sent to runInstances", callback);
+            testing.assertEquals(params.MaxCount, 1, "invalid MaxCount sent to runInstances", callback);
+            testing.assertEquals(params.ImageId, config.ESImageId, "invalid ImageId sent to runInstances", callback);
+            testing.assertEquals(params.InstanceType, config.ESInstanceType, "invalid InstanceType sent to runInstances", callback);
+            testing.assertEquals(params.Placement.AvailabilityZone, config.ESAvailabilityZone, "invalid AvailabilityZone sent to runInstances", callback);
+            testing.assertEquals(params.SecurityGroupIds.length, config.ESSecurityGroupIds.length, "invalid number of SecurityGroup ids sent to runInstances", callback);
+            for (var i=0; i<params.SecurityGroupIds.length; i++) {
+                testing.assertEquals(params.SecurityGroupIds[i], config.ESSecurityGroupIds[i], "invalid SecurityGroupId sent to runInstances", callback);
+            }
+            internalCallback(null, {Instances:[{
+                InstanceId: "testInstanceId",
+                PrivateIpAddress : "testPrivateIp"
+            }]});
+        },
+        createTags: function(params, callback) {
+            testing.assertEquals(params.Resources.length, 1, "wrong number of instances sent to createTags", callback);
+            testing.assertEquals(params.Resources[0], "testInstanceId", "wrong instanceId sent to createTags", callback);
+            testing.assertEquals(params.Tags.length, 2, "wrong number of tags sent to createTags", callback);
+            testing.assertEquals(params.Tags[0].Key, "Name", "wrong first tag key sent to createTags", callback);
+            testing.assertEquals(params.Tags[0].Value, config.ESNameTag, "wrong first tag value sent to createTags", callback);
+            testing.assertEquals(params.Tags[1].Key, "Group", "wrong second tag key sent to createTags", callback);
+            testing.assertEquals(params.Tags[1].Value, config.ESGroupTag, "wrong second tag value sent to createTags", callback);
+            callback(null);
+        }
+    };
+    // create and launch service
+    var service = new module.exports();
+    service.sendRequest(function (error, result) {
+        testing.check(error, callback);
+        testing.assertEquals(result.length, 1, "wrong number of instances returned", callback);
+        testing.assertEquals(result[0].name, config.ESNameTag, "wrong name for created instance", callback);
+        testing.assertEquals(result[0].id, "testInstanceId", "wrong id for created instance", callback);
+        testing.assertEquals(result[0].privateIp, "testPrivateIp", "wrong private ip for created instance", callback);
+        //restore ec2
+        ec2 = ec2_restore;
+        testing.success(callback);
+    });
+}
+
+function testValidParams(callback) {
+    // stub ec2
+    var ec2_restore = ec2;
+    ec2 = {
+        runInstances: function(params, internalCallback) {
+            testing.assertEquals(params.MinCount, 2, "invalid MinCount sent to runInstances", callback);
+            testing.assertEquals(params.MaxCount, 2, "invalid MaxCount sent to runInstances", callback);
+            testing.assertEquals(params.ImageId, config.ESImageId, "invalid ImageId sent to runInstances", callback);
+            testing.assertEquals(params.InstanceType, config.ESInstanceType, "invalid InstanceType sent to runInstances", callback);
+            testing.assertEquals(params.Placement.AvailabilityZone, config.ESAvailabilityZone, "invalid AvailabilityZone sent to runInstances", callback);
+            testing.assertEquals(params.SecurityGroupIds.length, config.ESSecurityGroupIds.length, "invalid number of SecurityGroup ids sent to runInstances", callback);
+            for (var i=0; i<params.SecurityGroupIds.length; i++) {
+                testing.assertEquals(params.SecurityGroupIds[i], config.ESSecurityGroupIds[i], "invalid SecurityGroupId sent to runInstances", callback);
+            }
+            internalCallback(null, {Instances:[{
+                InstanceId: "testInstanceId1",
+                PrivateIpAddress : "testPrivateIp1"
+            }, {
+
+                InstanceId: "testInstanceId2",
+                PrivateIpAddress : "testPrivateIp2"
+            }]});
+        },
+        createTags: function(params, callback) {
+            testing.assertEquals(params.Resources.length, 2, "wrong number of instances sent to createTags", callback);
+            testing.assertEquals(params.Resources[0], "testInstanceId1", "wrong instanceId sent to createTags", callback);
+            testing.assertEquals(params.Resources[1], "testInstanceId2", "wrong instanceId sent to createTags", callback);
+            testing.assertEquals(params.Tags.length, 2, "wrong number of tags sent to createTags", callback);
+            testing.assertEquals(params.Tags[0].Key, "Name", "wrong first tag key sent to createTags", callback);
+            testing.assertEquals(params.Tags[0].Value, config.ESNameTag, "wrong first tag value sent to createTags", callback);
+            testing.assertEquals(params.Tags[1].Key, "Group", "wrong second tag key sent to createTags", callback);
+            testing.assertEquals(params.Tags[1].Value, config.ESGroupTag, "wrong second tag value sent to createTags", callback);
+            callback(null);
+        }
+    };
+    // create and launch service
+    var service = new module.exports({count: 2});
+    service.sendRequest(function (error, result) {
+        testing.check(error, callback);
+        testing.assertEquals(result.length, 2, "wrong number of instances returned", callback);
+        testing.assertEquals(result[0].name, config.ESNameTag, "wrong name for created instance 1", callback);
+        testing.assertEquals(result[0].id, "testInstanceId1", "wrong id for created instance 1", callback);
+        testing.assertEquals(result[0].privateIp, "testPrivateIp1", "wrong private ip for created instance 1", callback);
+        testing.assertEquals(result[1].name, config.ESNameTag, "wrong name for created instance 2", callback);
+        testing.assertEquals(result[1].id, "testInstanceId2", "wrong id for created instance 2", callback);
+        testing.assertEquals(result[1].privateIp, "testPrivateIp2", "wrong private ip for created instance 2", callback);
+        //restore ec2
+        ec2 = ec2_restore;
+        testing.success(callback);
+    });
+}
+
+ exports.test = function(callback) {
+    testing.run([
+        testEmptyParams,
+        testValidParams
+    ], callback);
+};
+
+// run tests if invoked directly
+if (__filename == process.argv[1]) {
+    exports.test(testing.show);
+}
