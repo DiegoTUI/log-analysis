@@ -47,13 +47,13 @@ class SimpleHttpServer():
         self.waitForThread()
 
 def serverStatus():
-    loadavg = os.getloadavg()
+    cpu_percent = psutil.cpu_percent()
     virtual_memory = psutil.virtual_memory()
     swap_memory = psutil.swap_memory()
     disk_usage = psutil.disk_usage('/')
     elasticsearch_up = is_elasticsearch_up()
     
-    return {'loadavg': loadavg,
+    return {'cpu_percent': cpu_percent,
             'virtual_memory': virtual_memory,
             'swap_memory': swap_memory,
             'disk_usage': disk_usage,
