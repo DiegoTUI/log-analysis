@@ -13,11 +13,13 @@ var request = require("request");
 var Log = require("log");
 var config = require("./config.js");
 var watch = require("node-watch");
+var Reporter = require("./reporter.js").Reporter;
 
 // globals
 var log = new Log("debug");
 var haproxy = new HAProxy ("/tmp/haproxy.sock", {config: path.resolve(__dirname, config.haproxyConfig),
                                                 pidFile: path.resolve(__dirname, config.haproxyPidFile)});
+var reporter = new Reporter();
 var servers = null;
 
 /**
@@ -173,14 +175,25 @@ watch(path.resolve(__dirname, "servers.json"), function (filename) {
 
 //read status from every server
 setInterval(function () {
+    var reports = [];
     servers.forEach(function (server) {
         var url = "http://" + server.url + "/status";
         request(url, function (error, response, body) {
             if (!error && response.statusCode == 200) {
-                return log.info("Status of " + server.name + " (" + server.url + "): " + body);
+                log.debug("Status of " + server.name + " (" + server.url + "): " + body);
+                try {
+                    body = JSON.parse(body);
+                }
+                catch(exception) {
+                    return log.error("Could not parse wait-for-instance-status-ok response", exception);
+                }
+                body.name = server.name;
+                body.ip = server.url;
+                reports.push(body);
             }
             // error
             log.error ("Could not get status from " + server.url + ". Error: " + JSON.stringify(error));
         });
     });
+    reporter.sendReports(reports);
 }, config.interval);

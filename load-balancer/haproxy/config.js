@@ -10,7 +10,11 @@ exports.haproxyConfig = "./config/haproxy.cfg";
 exports.baseHaproxyConfig = "./base-haproxy.cfg";
 exports.haproxyPidFile = "./run/haproxy.pid";
 
-exports.interval = 5*60*1000;
+exports.interval = 60*1000;
+exports.bufferReportSize = 5;
+
+exports.awsServerUrl = "http://localhost:8080/yvalsd7bde93njbc67bd5/";
+exports.ESNodeName = "ES-Node";
 
 try {
     var localConfig = require("./local-config.js");
