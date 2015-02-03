@@ -17,6 +17,7 @@ exports.test = function(callback) {
         require("./lib/prototypes.js").test,
         require("./lib/services/create-instance.js").test,
         require("./lib/services/instance-status.js").test,
+        require("./lib/services/wait-for-instance-status-ok.js").test,
         require("./lib/services/describe-instance.js").test,
         require("./lib/services/terminate-instance.js").test,
         require("./lib/services/add-instance-haproxy.js").test
