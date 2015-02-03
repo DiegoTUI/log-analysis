@@ -53,10 +53,12 @@ def serverStatus():
     disk_usage = psutil.disk_usage('/')
     elasticsearch_up = is_elasticsearch_up()
     
-    return {'cpu_percent': cpu_percent,
-            'virtual_memory': virtual_memory,
-            'swap_memory': swap_memory,
-            'disk_usage': disk_usage,
+    print virtual_memory, swap_memory, disk_usage
+
+    return {'cpu': cpu_percent,
+            'virtual_memory': virtual_memory[2],
+            'swap_memory': swap_memory[3],
+            'disk_usage': disk_usage[3],
             'elasticsearch_up': elasticsearch_up}
 
 def is_elasticsearch_up():
