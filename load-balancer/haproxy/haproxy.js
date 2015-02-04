@@ -185,7 +185,7 @@ setInterval(function () {
                     body = JSON.parse(body);
                 }
                 catch(exception) {
-                    return log.error("Could not parse wait-for-instance-status-ok response", exception);
+                    return log.error("Could not parse status from server " + server.url, body, exception);
                 }
                 body.name = server.name;
                 body.ip = server.url;
