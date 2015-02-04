@@ -9,6 +9,7 @@
 var HAProxy = require("haproxy");
 var fs = require("fs");
 var path = require("path");
+var async = require("async");
 var request = require("request");
 var Log = require("log");
 var config = require("./config.js");
@@ -176,24 +177,32 @@ watch(path.resolve(__dirname, "servers.json"), function (filename) {
 //read status from every server
 setInterval(function () {
     var reports = [];
+    var stream = [];
     servers.forEach(function (server) {
         var url = "http://" + server.url + "/status";
-        request(url, function (error, response, body) {
-            if (!error && response.statusCode == 200) {
-                log.debug("Status of " + server.name + " (" + server.url + "): " + body);
-                try {
-                    body = JSON.parse(body);
+        stream.push(function (callback) {
+            request(url, function (error, response, body) {
+                if (!error && response.statusCode == 200) {
+                    log.debug("Status of " + server.name + " (" + server.url + "): " + body);
+                    try {
+                        body = JSON.parse(body);
+                    }
+                    catch(exception) {
+                        return log.error("Could not parse status from server " + server.url, body, exception);
+                    }
+                    body.name = server.name;
+                    body.ip = server.url;
+                    reports.push(body);
                 }
-                catch(exception) {
-                    return log.error("Could not parse status from server " + server.url, body, exception);
+                else {
+                    // log error
+                    log.error ("Could not get status from " + server.url + ". Error: ", error, response);
                 }
-                body.name = server.name;
-                body.ip = server.url;
-                return reports.push(body);
-            }
-            // error
-            log.error ("Could not get status from " + server.url + ". Error: " + JSON.stringify(error));
+                return callback(null);
+            });
         });
     });
-    reporter.sendReports(reports);
+    async.parallel(stream, function() {
+        reporter.sendReports(reports);
+    });
 }, config.interval);
