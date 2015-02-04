@@ -20,7 +20,8 @@ exports.test = function(callback) {
         require("./lib/services/wait-for-instance-status-ok.js").test,
         require("./lib/services/describe-instance.js").test,
         require("./lib/services/terminate-instance.js").test,
-        require("./lib/services/add-instance-haproxy.js").test
+        require("./lib/services/add-instance-haproxy.js").test,
+        require("./lib/services/remove-instance-haproxy.js").test
     ];
 
     testing.run(tests, callback);

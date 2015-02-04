@@ -12,7 +12,7 @@ exports.awsAccess = null; // to be defined in local-config.js
 exports.awsSecret = null; // to be defined in local-config.js
 exports.awsRegion = "eu-west-1";
 // Features of the ElasticSearch nodes
-exports.ESImageId = "ami-73bb3704";
+exports.ESImageId = "ami-a752dcd0";
 exports.ESSecurityGroupIds = ["sg-76198013", "sg-23e27946"];
 exports.ESKeyName = "ElasticSearch";
 exports.ESNameTag = "ES-Node";
