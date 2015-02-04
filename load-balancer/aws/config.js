@@ -24,6 +24,7 @@ exports.serversJsonPath = "/home/ubuntu/haproxy/servers.json";
 // Server
 exports.serverPort = 8080;
 exports.serverPortTest = 5054;
+exports.socketTimeout = 10*60*1000;
 exports.validApiKey = "yvalsd7bde93njbc67bd5";
 // Services
 exports.timeoutServices = ["create-instance"];
