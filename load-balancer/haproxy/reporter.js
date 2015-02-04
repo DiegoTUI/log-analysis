@@ -3,7 +3,7 @@
 // requires
 var config = require("./config.js");
 var moment = require("moment");
-var AwsManager = require("./aws-manager.js");
+var AwsManager = require("./aws-manager.js").AwsManager;
 var Log = require("log");
 
 // globals
