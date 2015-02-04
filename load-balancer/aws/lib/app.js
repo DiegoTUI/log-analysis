@@ -38,7 +38,7 @@ exports.startServer = function(port, callback) {
     }
     var app = express();
     // set timeout
-    app.use(timeout(exports.socketTimeout + "ms"));
+    //app.use(timeout(.socketTimeout/1000 + "s"));
     // Enable JSONP
     app.set("jsonp callback", true);
     // path to the services
@@ -50,7 +50,7 @@ exports.startServer = function(port, callback) {
 
     server.on("connection", function(socket) {
         log.debug("New connection. Setting timeout.");
-        socket.setTimeout(exports.socketTimeout);
+        socket.setTimeout(config.socketTimeout);
     });
 };
 
