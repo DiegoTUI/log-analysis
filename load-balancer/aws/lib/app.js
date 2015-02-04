@@ -48,7 +48,7 @@ exports.startServer = function(port, callback) {
 
     server = app.listen(port, callback);
 
-    sever.on("connection", function(socket) {
+    server.on("connection", function(socket) {
         log.debug("New connection. Setting timeout.");
         socket.setTimeout(10 * 60 * 1000);
     });
