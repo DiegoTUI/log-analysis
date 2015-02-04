@@ -14,7 +14,7 @@ exports.awsRegion = "eu-west-1";
 // Features of the ElasticSearch nodes
 exports.ESImageId = "ami-73bb3704";
 exports.ESSecurityGroupIds = ["sg-76198013", "sg-23e27946"];
-exports.ESKeyName = "ElasticSearch.pem";
+exports.ESKeyName = "ElasticSearch";
 exports.ESNameTag = "ES-Node";
 exports.ESGroupTag = "ES-Cluster";
 exports.ESInstanceType = "t2.medium";
