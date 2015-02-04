@@ -4,9 +4,11 @@
 var config = require("./config.js");
 var moment = require("moment");
 var AwsManager = require("./aws-manager.js");
+var Log = require("log");
 
 // globals
 var awsManager = new AwsManager();
+var log = new Log(config.logLevel);
 
 /**
  * The reporter object receives reports from the haproxy regarding the status
@@ -48,6 +50,7 @@ exports.Reporter = function() {
      * Trims the buffer to remove old/expired data.
      */
     function trim() {
+        log.debug("Trimming for buffer of length " + Object.keys(buffer).length);
         var now = moment();
         for (var ip in buffer) {
             // remove old entries
@@ -60,14 +63,19 @@ exports.Reporter = function() {
                 }
             }
             // terminate server if the buffer is empty
-            terminateInstance(ip);
+            if (buffer[ip].length === 0) {
+                log.info("Ip " + ip + " has no reports.");
+                terminateInstance(ip);
+            }
         }
+        log.debug("Buffer trimmed. Length now is " + Object.keys(buffer).length);
     }
 
     /**
      * Terminate machine and remove from buffer.
      */
     function terminateInstance(ip) {
+
         awsManager.terminateInstance(ip);
         // remove ip from buffer
         delete buffer[ip];
@@ -79,9 +87,15 @@ exports.Reporter = function() {
      function react() {
         // we only check the servers with enough reports. We need the average for all those of the servers
         var activeAverage = getActiveAverage();
+        log.debug("Reacting for " + activeAverage.length + " servers");
+        // return if there is no active average
+        if (activeAverage.length === 0) {
+            return;
+        }
         // check if any of the elasticsearch_up is negative. If it is negative, terminate the machine
         activeAverage.forEach(function (report) {
             if (report.elasticsearch_up < 0) {
+                log.info("Server " + report.ip + " has elasticsearch down.");
                 terminateInstance(report.ip);
             }
         });
@@ -96,8 +110,10 @@ exports.Reporter = function() {
                 disk_usage: (previous.disk_usage * index + current.disk_usage) / (index + 1)
             };
         });
+        log.debug("Total average ", totalAverage);
         // add or remove machines
         if (shouldAdd()) {
+            log.debug("Should add returned true.");
             shouldReport = false;
             awsManager.launchInstance(function(error) {
                 if (!error) {
@@ -107,6 +123,7 @@ exports.Reporter = function() {
             });
 
         } else if (shouldRemove()) {
+            log.debug("Should remove returned true.");
             if (activeAverage.length > 1) {
                 var removableMachines = activeAverage.filter(function (report) {
                     return report.name === config.ESNodeName;
@@ -123,10 +140,16 @@ exports.Reporter = function() {
         }
 
         function shouldAdd() {
+            if (activeAverage.length < 4) {
+                return true;
+            }
             return false;
         }
 
         function shouldRemove() {
+            if (activeAverage.length > 3) {
+                return true;
+            }
             return false;
         }
      }

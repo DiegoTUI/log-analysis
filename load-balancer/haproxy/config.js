@@ -6,6 +6,8 @@ var Log = require("log");
 // globals
 var log = new Log("info");
 
+exports.logLevel = "debug";
+
 exports.haproxyConfig = "./config/haproxy.cfg";
 exports.baseHaproxyConfig = "./base-haproxy.cfg";
 exports.haproxyPidFile = "./run/haproxy.pid";

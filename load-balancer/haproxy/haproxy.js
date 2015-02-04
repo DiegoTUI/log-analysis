@@ -16,7 +16,7 @@ var watch = require("node-watch");
 var Reporter = require("./reporter.js").Reporter;
 
 // globals
-var log = new Log("debug");
+var log = new Log(config.logLevel);
 var haproxy = new HAProxy ("/tmp/haproxy.sock", {config: path.resolve(__dirname, config.haproxyConfig),
                                                 pidFile: path.resolve(__dirname, config.haproxyPidFile)});
 var reporter = new Reporter();
