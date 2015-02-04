@@ -189,7 +189,7 @@ setInterval(function () {
                 }
                 body.name = server.name;
                 body.ip = server.url;
-                reports.push(body);
+                return reports.push(body);
             }
             // error
             log.error ("Could not get status from " + server.url + ". Error: " + JSON.stringify(error));
