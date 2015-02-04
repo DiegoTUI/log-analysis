@@ -8,6 +8,7 @@
 // requires
 var Log = require("log");
 var express = require("express");
+var timeout = require('connect-timeout');
 var request = require("request");
 var services = require("./services");
 var config = require("../config.js");
@@ -36,6 +37,8 @@ exports.startServer = function(port, callback) {
         port = config.serverPort;
     }
     var app = express();
+    // set timeout
+    app.use(timeout("600s"));
     // Enable JSONP
     app.set("jsonp callback", true);
     // path to the services

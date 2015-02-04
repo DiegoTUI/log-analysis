@@ -53,6 +53,7 @@ exports.Service = function (params) {
         delete params.count;
         // rest of parameters
         params.ImageId = config.ESImageId;
+        params.KeyName = config.ESKeyName;
         params.InstanceType = config.ESInstanceType;
         params.Placement = {
             AvailabilityZone: config.ESAvailabilityZone
@@ -119,6 +120,7 @@ function testEmptyParams(callback) {
             testing.assertEquals(params.MinCount, 1, "invalid MinCount sent to runInstances", callback);
             testing.assertEquals(params.MaxCount, 1, "invalid MaxCount sent to runInstances", callback);
             testing.assertEquals(params.ImageId, config.ESImageId, "invalid ImageId sent to runInstances", callback);
+            testing.assertEquals(params.KeyName, config.ESKeyName, "invalid KeyName sent to runInstances", callback);
             testing.assertEquals(params.InstanceType, config.ESInstanceType, "invalid InstanceType sent to runInstances", callback);
             testing.assertEquals(params.Placement.AvailabilityZone, config.ESAvailabilityZone, "invalid AvailabilityZone sent to runInstances", callback);
             testing.assertEquals(params.SecurityGroupIds.length, config.ESSecurityGroupIds.length, "invalid number of SecurityGroup ids sent to runInstances", callback);
@@ -163,6 +165,7 @@ function testValidParams(callback) {
             testing.assertEquals(params.MinCount, 2, "invalid MinCount sent to runInstances", callback);
             testing.assertEquals(params.MaxCount, 2, "invalid MaxCount sent to runInstances", callback);
             testing.assertEquals(params.ImageId, config.ESImageId, "invalid ImageId sent to runInstances", callback);
+            testing.assertEquals(params.InstanceType, config.ESInstanceType, "invalid InstanceType sent to runInstances", callback);
             testing.assertEquals(params.InstanceType, config.ESInstanceType, "invalid InstanceType sent to runInstances", callback);
             testing.assertEquals(params.Placement.AvailabilityZone, config.ESAvailabilityZone, "invalid AvailabilityZone sent to runInstances", callback);
             testing.assertEquals(params.SecurityGroupIds.length, config.ESSecurityGroupIds.length, "invalid number of SecurityGroup ids sent to runInstances", callback);
