@@ -75,8 +75,13 @@ exports.Reporter = function() {
      * Terminate machine and remove from buffer.
      */
     function terminateInstance(ip) {
-
-        awsManager.terminateInstance(ip);
+        awsManager.terminateInstance(ip, function(error) {
+            if (error) {
+                log.error("Something kinky happened while trying to terminate and remove from servers.json the instance with ip " + ip + ". Check this log for errors");
+            }
+            // remove ip from buffer
+            delete buffer[ip];
+        });
         // remove ip from buffer
         delete buffer[ip];
     }
@@ -130,7 +135,7 @@ exports.Reporter = function() {
                 });
                 if (removableMachines.length > 0) {
                     shouldReport = false;
-                    awsManager.terminateInstance(removableMachines[0].ip);
+                    terminateInstance(removableMachines[0].ip);
                     buffer = {};
                     setTimeout(function(){
                         shouldReport = true;
